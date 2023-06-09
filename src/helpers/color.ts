@@ -3,11 +3,8 @@ export function color(node) {
     if (node.fills[0].visible) {
       switch (node.fills[0].type) {
         case "SOLID": {
-          // console.log(node.fills[0].opacity);
           if (node.fills[0].opacity != 1) {
-            // console.log(node.fills[0].opacity);
             const colorOpacity = ((255 * node.fills[0].opacity) / 1) | 0;
-            // console.log(componentToHex(colorOpacity));
             return `background-color: ${
               colorGen(node.fills[0].color) + componentToHex(colorOpacity) + ";"
             } `;
@@ -15,7 +12,6 @@ export function color(node) {
           return `background-color: ${colorGen(node.fills[0].color)}; `;
         }
         case "GRADIENT_LINEAR": {
-          //     background-image: linear-gradient(90deg, rgb(238, 174, 202) 0%, rgb(148, 187, 233) 100%);
           const colorStops = node.fills[0].gradientStops;
           let output = `background-image: linear-gradient(90deg, `;
           colorStops.forEach((element) => {
@@ -46,8 +42,6 @@ export function colorGen(colorArray) {
   const rN = ((255 * colorArray.r) / 1) | 0;
   const gN = ((255 * colorArray.g) / 1) | 0;
   const bN = ((255 * colorArray.b) / 1) | 0;
-  // console.log(colorArray.r);
-  // console.log(rN);
 
   const output =
     "#" + componentToHex(rN) + componentToHex(gN) + componentToHex(bN);
