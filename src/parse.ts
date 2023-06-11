@@ -1,9 +1,5 @@
 import { styleText, styleFrame, styleEllipse } from "./style";
-// import { TextEncoder, TextDecoder } from "fastestsmallesttextencoderdecoder";
-// const encode = new TextEncoder().encode;
-// const decode = new TextDecoder().decode;
-// import { encode, decode } from "fastestsmallesttextencoderdecoder";
-// const decodeA = decode;
+import { color, colorGen, componentToHex } from "./helpers/color";
 
 let output = "";
 
@@ -31,50 +27,55 @@ async function traverse(node) {
         return;
       }
 
-      // Predetermined elements
       switch (node.getRelaunchData().tag) {
         case "Button": {
           const css = styleFrame(node);
           output += `\n<button style="${css}">Click me</button>`;
           return;
         }
+
         case "Input": {
           const css = styleFrame(node);
           output += `\n<input style="${css}"></input>`;
           return;
         }
+
         default: {
-          // image
           const css = styleFrame(node);
           output += `\n<div style="${css}">`;
+
+          if (
+            node.fills.length > 0 &&
+            node.fills !== figma.mixed &&
+            node.fills[0].type === "IMAGE"
+          ) {
+            output += `<img src="https://cdn.weweb.app/public/images/no_image_selected.png" style="width: 100%; fill: cover; height: 100%"></img>`;
+          }
           break;
         }
       }
       break;
     }
+
     case "TEXT": {
       const css = styleText(node);
       output += `\n<p style="${css}">${node.characters}</p>`;
       break;
     }
+
     case "RECTANGLE": {
       if (resolveImage(node)) {
         output += `<img src="https://cdn.weweb.app/public/images/no_image_selected.png" style="width: 100%; fill: cover; height: ${node.height}px"></img>`;
       }
-      /* else {
-        const css = styleFrame(node);
-        output += `\n<div style="${css}"></div>`;
-      }
-      */
       break;
     }
 
-    /* case "ELLIPSE": {
-      const css = styleEllipse(node);
-      output += `\n<div style="${css}"></div>`;
+    case "LINE": {
+      output += `<div style="width: 100%; height: ${
+        node.strokeWeight
+      }px; background-color: ${colorGen(node.strokes[0].color)}"></div>`;
       break;
     }
-    */
   }
 
   // Traverse the node
