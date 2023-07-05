@@ -1,4 +1,4 @@
-import { styleText, styleFrame, styleEllipse } from "./style";
+import { styleText, styleFrame } from "./style";
 import { color, colorGen, componentToHex } from "./helpers/color";
 
 let output = "";
@@ -29,14 +29,39 @@ async function traverse(node) {
 
       switch (node.getRelaunchData().tag) {
         case "Button": {
-          const css = styleFrame(node);
-          output += `\n<button style="${css}">Click me</button>`;
+          let css = styleFrame(node);
+          let text = "Click me";
+
+          for (const child of node.children) {
+            if (child.type === "TEXT") {
+              css += ` color: ${colorGen(child.fills[0].color)}; font-size: ${
+                child.fontSize
+              }px; margin-block-start: 0px; margin-block-end: 0px;`;
+              text = child.characters;
+            }
+          }
+          output += `\n<button style="${css}">${text}</button>`;
           return;
         }
 
         case "Input": {
           const css = styleFrame(node);
           output += `\n<input style="${css}"></input>`;
+          return;
+        }
+
+        case "Select": {
+          const css = styleFrame(node);
+          output += `\n<select style="${css}"></select>`;
+          return;
+        }
+
+        case "Image": {
+          output += `<img src="https://cdn.weweb.app/public/images/no_image_selected.png" style="width: 100%; fill: cover; height: ${node.height}px"></img>`;
+          return;
+        }
+
+        case "Ignore": {
           return;
         }
 

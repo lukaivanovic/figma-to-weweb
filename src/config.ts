@@ -1,14 +1,10 @@
-import { keys } from "./beta";
+import { key } from "./beta";
 
 export async function loadConfig() {
-  const isVerified = await figma.clientStorage.getAsync("isVerified");
+  const isVerified = await figma.clientStorage.getAsync("key");
   return isVerified;
 }
 
 export function updateConfig(betaKey) {
-  if (keys.includes(betaKey)) {
-    figma.clientStorage.setAsync("isVerified", true);
-    figma.ui.postMessage({ type: "verified" });
-    figma.ui.resize(320, 320);
-  }
+  figma.clientStorage.setAsync("key", betaKey);
 }

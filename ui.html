@@ -2,85 +2,117 @@
 
 <html>
   <body>
-    <!--
-    <div>
-      <span class="label">Tag element</span>
-      <div class="buttons-row">
-        <div class="button secondary" onclick="tagElement(`button`)">
-          Button
-        </div>
-        <div class="button secondary" onclick="tagElement(`input`)">Input</div>
-      </div>
-    </div>
-    
-    <div class="button" onclick="buttonPress()">Mark element as</div>
-    -->
-    <p class="label">Watch the video tutorial</p>
-    <p class="label">Want to import buttons, inputs and other elements?</p>
-    <p class="info">Select a frame and select something from the dropdown.</p>
-
-    <select id="tag" class="tagDropdown">
-      <option value="" disabled selected>Mark element as</option>
-      <option value="button">Button</option>
-      <option value="input">Input field</option>
-      <option value="image">Image</option>
-      <option value="ignore">Ignore this frame</option>
-    </select>
+    <a
+      class="videoBackground"
+      href="https://youtu.be/PDIiADFESE8"
+      target="_blank"
+    >
+      <img
+        style="width: 34px; height: 22px"
+        src="https://cdn.weweb.io/designs/80de8d5f-095a-44b6-9598-d639feace8ce/sections/video-thumbnail.png?_wwcv=1686697672954"
+      />
+      <span class="text2">Watch the video tutorial</span>
+    </a>
 
     <div class="divider"></div>
 
+    <select id="tag" class="tagDropdown">
+      <option id="tagPlaceholder" value="" selected>Mark element as</option>
+      <option value="Button">Button</option>
+      <option value="Input">Text field</option>
+      <option value="Select">Select dropdown</option>
+      <option value="Image">Image</option>
+      <option value="Ignore">Ignore this frame</option>
+    </select>
+
+    <button id="generateButton" class="button" onclick="buttonPress()">
+      Click to generate
+    </button>
+    <p id="infoMessage" class="info"></p>
+
     <div id="beta">
       <span class="label"> Beta Key</span>
-      <input class="betaInput" type="text" />
-      <div class="divider"></div>
+      <input id="betaInput" class="betaInput" type="text" />
     </div>
-
-    <div class="button" onclick="buttonPress()">Click to generate</div>
-    <p id="success" class="info">Output copied to clipboard.</p>
   </body>
 </html>
 
 <script>
-  const buttonPress = () => {
-    parent.postMessage({ pluginMessage: { type: "export" } }, "*");
-  };
-
-  // const input = document.querySelector("input");
+  const generateButton = document.querySelector("button");
   const tag = document.querySelector(".tagDropdown");
+  const infoMessage = document.getElementById("infoMessage");
+  const dropdownSelect = document.getElementById("tag");
+  const nodeTag = document.getElementById("nodeTag");
+  const tagPlaceholder = document.getElementById("tagPlaceholder");
+  const betaInput = document.getElementById("betaInput");
 
-  // input.addEventListener("change", updateValue);
-  tag.addEventListener("change", tagElement, false);
+  dropdownSelect.addEventListener("change", tagElement, false);
 
-  function tagElement(type) {
-    console.log("fired");
-    // parent.postMessage({ pluginMessage: { type: "tag", payload: type } }, "*");
-    tag.selectedIndex = 0;
-  }
-
-  function updateValue(e) {
-    parent.postMessage(
-      { pluginMessage: { type: "config", payload: e.target.value } },
-      "*"
-    );
-  }
+  generateButton.disabled = true;
+  dropdownSelect.disabled = true;
 
   onmessage = (event) => {
     switch (event.data.pluginMessage.type) {
       case "export":
         unsecuredCopyToClipboard(event.data.pluginMessage.payload);
-        const successMsg = document.getElementById("success");
-
-        successMsg.style.display = "block";
-
-        setTimeout(() => {
-          successMsg.style.display = "none";
-        }, 3000);
+        showInfoMessage("Output copied to clipboard.", true);
         break;
       case "verified":
-        document.getElementById("beta").style.display = "none";
+        betaInput.value = event.data.pluginMessage.payload;
         break;
+      case "error":
+        generateButton.disabled = true;
+        if (event.data.pluginMessage.payload.code === "TOO_MANY") {
+          dropdownSelect.disabled = false;
+        } else {
+          dropdownSelect.disabled = true;
+        }
+
+        showInfoMessage(event.data.pluginMessage.payload.message, false);
+        break;
+      case "ok":
+        generateButton.disabled = false;
+        dropdownSelect.disabled = false;
+        showInfoMessage(event.data.pluginMessage.payload, false);
+        break;
+      case "tag":
+        dropdownSelect.removeEventListener("change", tagElement, false);
+        console.log(event.data.pluginMessage.payload);
+        if (event.data.pluginMessage.payload === "none") {
+          dropdownSelect.value = "";
+        } else {
+          dropdownSelect.value = event.data.pluginMessage.payload;
+        }
+
+        dropdownSelect.addEventListener("change", tagElement, false);
     }
   };
+
+  const buttonPress = () => {
+    parent.postMessage(
+      { pluginMessage: { type: "export", payload: betaInput.value } },
+      "*"
+    );
+  };
+
+  function tagElement(type) {
+    console.log(dropdownSelect.value);
+    parent.postMessage(
+      { pluginMessage: { type: "tag", payload: dropdownSelect.value } },
+      "*"
+    );
+  }
+
+  function showInfoMessage(message, disappear) {
+    let currentMessage = infoMessage.innerText;
+    infoMessage.innerText = message;
+
+    if (disappear) {
+      setTimeout(() => {
+        infoMessage.innerText = currentMessage;
+      }, 1200);
+    }
+  }
 
   const unsecuredCopyToClipboard = (text) => {
     const textArea = document.createElement("textarea");
@@ -101,14 +133,8 @@
   .divider {
     height: 1px;
     background-color: var(--figma-color-border);
-    margin: 16px 0px;
-  }
-
-  .buttons-row {
-    margin-top: 8px;
-    display: flex;
-    flex-direction: row;
-    column-gap: 8px;
+    margin: 12px auto;
+    padding: 0px 16px;
   }
 
   .button {
@@ -123,19 +149,48 @@
     border-radius: 8px;
     cursor: pointer;
     padding: 0px 16px;
+    border: none;
+    width: 100%;
+  }
+
+  .button:disabled {
+    background-color: var(--figma-color-bg-disabled);
+    color: var(--figma-color-text-disabled);
+    pointer-events: none;
+    user-select: none;
+  }
+
+  .button:disabled:active {
+    background-color: var(--figma-color-bg-disabled);
+  }
+
+  .button:active {
+    background-color: var(--figma-color-bg-brand-pressed);
   }
 
   .tagDropdown {
     background-color: var(--figma-color-bg-secondary);
     height: 32px;
     font-size: 11px;
-    font-weight: 600;
     color: white;
     display: flex;
     width: 100%;
     border-radius: 8px;
     cursor: pointer;
     padding: 0px 4px;
+    color: var(--figma-color-text-secondary);
+    border: 1px solid var(--figma-color-border);
+    margin-bottom: 12px;
+  }
+
+  .tagDropdown:hover {
+    color: var(--figma-color-text-tertiary);
+  }
+
+  .tagDropdown:disabled {
+    background-color: var(--figma-color-bg-secondary);
+    color: var(--figma-color-text-disabled);
+    border: 1px solid var(--figma-color-border);
   }
 
   .button.secondary {
@@ -157,13 +212,15 @@
   }
 
   body {
-    font-family: Inter;
+    font-family: "Inter", sans-serif;
     -webkit-font-smoothing: antialiased;
     color: var(--figma-color-text);
   }
 
-  .button:active {
-    background-color: var(--figma-color-bg-brand-pressed);
+  select {
+    font-family: "Inter", sans-serif;
+    -webkit-font-smoothing: antialiased;
+    font-weight: 600;
   }
 
   .label {
@@ -203,7 +260,7 @@
 
   .info {
     font-size: 11px;
-    color: var(--figma-color-text-tertiary);
+    color: var(--figma-color-text-secondary);
   }
 
   .betaInput {
@@ -214,5 +271,36 @@
 
   .betaInput:focus {
     outline: none;
+  }
+
+  .label2 {
+    font-size: 11px;
+    font-weight: 500;
+    color: var(--figma-color-text-primary);
+    margin-bottom: 6px;
+    margin-top: 24px;
+  }
+
+  .text2 {
+    font-size: 11px;
+    font-weight: 400;
+    color: var(--figma-color-text-secondary);
+  }
+
+  .videoBackground {
+    background-color: var(--figma-color-bg-secondary);
+    height: 24px;
+    border-radius: 8px;
+    padding: 8px;
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: flex-start;
+    text-decoration: none;
+    column-gap: 8px;
+  }
+
+  .videoBackground:hover {
+    background-color: var(--figma-color-bg-brand-secondary-hover);
   }
 </style>
