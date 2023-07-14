@@ -1,6 +1,11 @@
 export function tag(type) {
-  const selection = figma.currentPage.selection[0];
+  const selection = figma.currentPage.selection;
 
+  selection.forEach((node) => {
+    node.setRelaunchData({ tag: type });
+  });
+
+  /*
   switch (type) {
     case "":
       selection.setRelaunchData({});
@@ -21,4 +26,5 @@ export function tag(type) {
       selection.setRelaunchData({ tag: "Ignore" });
       break;
   }
+  */
 }
