@@ -32,6 +32,10 @@ export function layout(node) {
     }
   }
 
+  if (node.layoutGrow == 1 || node.layoutAlign === "STRETCH") {
+    style += "width: 100% !important; ";
+  }
+
   return style;
 }
 
@@ -39,10 +43,6 @@ function autoLayoutNode(node) {
   let style = "";
 
   style += "display: flex; ";
-
-  if (node.layoutGrow == 1 || node.layoutAlign === "STRETCH") {
-    style += "width: 100% !important; ";
-  }
 
   if (node.layoutMode === "VERTICAL") {
     style += "flex-direction: column; ";
