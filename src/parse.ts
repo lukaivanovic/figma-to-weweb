@@ -1,16 +1,21 @@
-import { styleText, styleFrame } from "./style";
 import { color, colorGen, componentToHex } from "./helpers/color";
+import { frame } from "./style/frame";
+import { text } from "./style/text";
 
 let output = "";
+let count = 0;
 
 export async function parse(selection) {
   output = "";
 
   for (const node of selection) {
     await traverse(node);
+    count++;
   }
 
+  const outputF = `<html><head></head><body> ${output}</body> </html>`;
   figma.ui.postMessage({ type: "export", payload: output });
+  figma.ui.postMessage({ type: "iframe", payload: outputF });
   figma.notify("Generation complete. Paste in WeWeb.");
 }
 
@@ -29,7 +34,7 @@ async function traverse(node) {
 
       switch (node.getRelaunchData().tag) {
         case "Button": {
-          let css = styleFrame(node);
+          let css = frame(node);
           let text = "Click me";
 
           for (const child of node.children) {
@@ -45,13 +50,13 @@ async function traverse(node) {
         }
 
         case "Input": {
-          const css = styleFrame(node);
+          const css = frame(node);
           output += `\n<input style="${css}"></input>`;
           return;
         }
 
         case "Select": {
-          const css = styleFrame(node);
+          const css = frame(node);
           output += `\n<select style="${css}"></select>`;
           return;
         }
@@ -66,7 +71,10 @@ async function traverse(node) {
         }
 
         default: {
-          const css = styleFrame(node);
+          let css = frame(node);
+          if (count === 0) {
+            css += ` width: ${node.width}px !important; `;
+          }
           output += `\n<div style="${css}">`;
 
           if (
@@ -83,7 +91,7 @@ async function traverse(node) {
     }
 
     case "TEXT": {
-      const css = styleText(node);
+      const css = text(node);
       output += `\n<p style="${css}">${node.characters}</p>`;
       break;
     }
@@ -103,6 +111,7 @@ async function traverse(node) {
     }
   }
 
+  count++;
   // Traverse the node
   if ("children" in node) {
     for (const child of node.children) {
@@ -127,7 +136,7 @@ async function resolveIcon(node) {
       }
     }
     if (node.width > 64 && node.height > 64) {
-      const css = styleFrame(node);
+      const css = frame(node);
       output += `\n<div style="${css}">`;
     } else {
       output += `<img tag="icon" style="width: ${node.width}px; height: ${node.height}px;" src="https://cdn.weweb.io/public/images/sun.svg" />`;

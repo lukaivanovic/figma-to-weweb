@@ -34,6 +34,19 @@
       <span class="label"> Beta Key</span>
       <input id="betaInput" class="betaInput" type="text" />
     </div>
+
+    <!--
+
+      <iframe
+      id="iframe"
+      src=""
+      style="
+        width: 100%;
+        height: 400px;
+        transform: scale(0.5) translate(-50%, -50%);
+      "
+    ></iframe>
+    -->
   </body>
 </html>
 
@@ -45,6 +58,7 @@
   const nodeTag = document.getElementById("nodeTag");
   const tagPlaceholder = document.getElementById("tagPlaceholder");
   const betaInput = document.getElementById("betaInput");
+  // const iframe = document.getElementById("iframe");
 
   dropdownSelect.addEventListener("change", tagElement, false);
 
@@ -67,7 +81,6 @@
         } else {
           dropdownSelect.disabled = true;
         }
-
         showInfoMessage(event.data.pluginMessage.payload.message, false);
         break;
       case "ok":
@@ -83,8 +96,15 @@
         } else {
           dropdownSelect.value = event.data.pluginMessage.payload;
         }
-
         dropdownSelect.addEventListener("change", tagElement, false);
+        break;
+      case "iframe":
+        /*
+        iframe.src =
+          "data:text/html;charset=utf-8," +
+          escape(event.data.pluginMessage.payload);
+          */
+        break;
     }
   };
 
