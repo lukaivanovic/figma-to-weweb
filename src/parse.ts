@@ -1,20 +1,21 @@
-import { styleText, styleFrame, styleEllipse } from "./style";
-// import { TextEncoder, TextDecoder } from "fastestsmallesttextencoderdecoder";
-// const encode = new TextEncoder().encode;
-// const decode = new TextDecoder().decode;
-// import { encode, decode } from "fastestsmallesttextencoderdecoder";
-// const decodeA = decode;
+import { color, colorGen, componentToHex } from "./helpers/color";
+import { frame } from "./style/frame";
+import { text } from "./style/text";
 
 let output = "";
+let count = 0;
 
 export async function parse(selection) {
   output = "";
 
   for (const node of selection) {
     await traverse(node);
+    count++;
   }
 
+  const outputF = `<html><head></head><body> ${output}</body> </html>`;
   figma.ui.postMessage({ type: "export", payload: output });
+  figma.ui.postMessage({ type: "iframe", payload: outputF });
   figma.notify("Generation complete. Paste in WeWeb.");
 }
 
@@ -31,52 +32,86 @@ async function traverse(node) {
         return;
       }
 
-      // Predetermined elements
       switch (node.getRelaunchData().tag) {
         case "Button": {
-          const css = styleFrame(node);
-          output += `\n<button style="${css}">Click me</button>`;
+          let css = frame(node);
+          let text = "Click me";
+
+          for (const child of node.children) {
+            if (child.type === "TEXT") {
+              css += ` color: ${colorGen(child.fills[0].color)}; font-size: ${
+                child.fontSize
+              }px; margin-block-start: 0px; margin-block-end: 0px;`;
+              text = child.characters;
+            }
+          }
+          output += `\n<button style="${css}">${text}</button>`;
           return;
         }
+
         case "Input": {
-          const css = styleFrame(node);
+          const css = frame(node);
           output += `\n<input style="${css}"></input>`;
           return;
         }
+
+        case "Select": {
+          const css = frame(node);
+          output += `\n<select style="${css}"></select>`;
+          return;
+        }
+
+        case "Image": {
+          output += `<img src="https://cdn.weweb.app/public/images/no_image_selected.png" style="width: 100%; fill: cover; height: ${node.height}px"></img>`;
+          return;
+        }
+
+        case "Ignore": {
+          return;
+        }
+
         default: {
-          // image
-          const css = styleFrame(node);
+          let css = frame(node);
+          if (count === 0) {
+            css += ` width: ${node.width}px !important; `;
+          }
           output += `\n<div style="${css}">`;
+
+          if (
+            node.fills.length > 0 &&
+            node.fills !== figma.mixed &&
+            node.fills[0].type === "IMAGE"
+          ) {
+            output += `<img src="https://cdn.weweb.app/public/images/no_image_selected.png" style="width: 100%; fill: cover; height: 100%"></img>`;
+          }
           break;
         }
       }
       break;
     }
+
     case "TEXT": {
-      const css = styleText(node);
+      const css = text(node);
       output += `\n<p style="${css}">${node.characters}</p>`;
       break;
     }
+
     case "RECTANGLE": {
       if (resolveImage(node)) {
         output += `<img src="https://cdn.weweb.app/public/images/no_image_selected.png" style="width: 100%; fill: cover; height: ${node.height}px"></img>`;
       }
-      /* else {
-        const css = styleFrame(node);
-        output += `\n<div style="${css}"></div>`;
-      }
-      */
       break;
     }
 
-    /* case "ELLIPSE": {
-      const css = styleEllipse(node);
-      output += `\n<div style="${css}"></div>`;
+    case "LINE": {
+      output += `<div style="width: 100%; height: ${
+        node.strokeWeight
+      }px; background-color: ${colorGen(node.strokes[0].color)}"></div>`;
       break;
     }
-    */
   }
 
+  count++;
   // Traverse the node
   if ("children" in node) {
     for (const child of node.children) {
@@ -101,7 +136,7 @@ async function resolveIcon(node) {
       }
     }
     if (node.width > 64 && node.height > 64) {
-      const css = styleFrame(node);
+      const css = frame(node);
       output += `\n<div style="${css}">`;
     } else {
       output += `<img tag="icon" style="width: ${node.width}px; height: ${node.height}px;" src="https://cdn.weweb.io/public/images/sun.svg" />`;
