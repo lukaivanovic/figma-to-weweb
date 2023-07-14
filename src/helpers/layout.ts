@@ -31,7 +31,6 @@ export function layout(node) {
       }
     }
   }
-
   if (node.layoutGrow == 1 || node.layoutAlign === "STRETCH") {
     style += "width: 100% !important; ";
   }
