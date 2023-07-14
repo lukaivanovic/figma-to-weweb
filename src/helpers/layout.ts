@@ -3,6 +3,9 @@ import { padding } from "../helpers/padding";
 export function layout(node) {
   let style = "";
 
+  console.log(node.layoutSizingHorizontal);
+  console.log(node.layoutSizingVertical);
+
   if (node.layoutMode !== "NONE") {
     style += autoLayoutNode(node);
   } else {
@@ -12,28 +15,25 @@ export function layout(node) {
     style += `height: ${node.height}px; `;
   }
 
+  /*
   if (node.parent.layoutMode === "NONE") {
     style += `width: ${node.width}px; `;
     style += `height: ${node.height}px; `;
-  } else {
-    if (node.layoutPositioning === "ABSOLUTE") {
-      style += "position: absolute; ";
-      if (node.constraints.horizontal === "MAX") {
-        style += `right:${node.parent.width - node.x - node.width}px; `;
-      } else {
-        style += `left:${node.x}px; `;
-      }
-
-      if (node.constraints.vertical === "MAX") {
-        style += `bottom:${node.parent.height - node.y - node.height}px; `;
-      } else {
-        style += `top:${node.y}px; `;
-      }
-    }
   }
+  */
+
+  if (
+    node.parent.layoutMode !== "NONE" &&
+    node.layoutPositioning === "ABSOLUTE"
+  ) {
+    style += handleAbsolutePos(node);
+  }
+
+  /*
   if (node.layoutGrow == 1 || node.layoutAlign === "STRETCH") {
     style += "width: 100% !important; ";
   }
+  */
 
   return style;
 }
@@ -60,6 +60,33 @@ function autoLayoutNode(node) {
     style += "justify-content: space-between;";
   }
 
+  switch (node.layoutSizingHorizontal) {
+    case "FIXED":
+      style += `width: ${node.width}px; `;
+      break;
+    case "HUG":
+      style += "width: auto; ";
+      break;
+    case "FILL":
+      style += `width: 100%; `;
+      break;
+  }
+
+  switch (node.layoutSizingVertical) {
+    case "FIXED":
+      style += `height: ${node.height}px; `;
+      break;
+    case "HUG":
+      style += "height: auto; ";
+      break;
+    case "FILL":
+      style += `height: 100%; `;
+      break;
+  }
+
+  style += padding(node);
+
+  /*
   if (node.primaryAxisSizingMode === "FIXED") {
     if (node.layoutMode === "HORIZONTAL") {
       style += `width: ${node.width}px; `;
@@ -75,9 +102,10 @@ function autoLayoutNode(node) {
       style += `width: ${node.width}px; `;
     }
 
-    style += padding(node);
+    
   }
 
+  */
   if (node.primaryAxisAlignItems === "MIN") {
     style += "justify-content: flex-start; ";
   } else if (node.primaryAxisAlignItems === "CENTER") {
@@ -92,6 +120,23 @@ function autoLayoutNode(node) {
     style += "align-items: center; ";
   } else if (node.counterAxisAlignItems === "MAX") {
     style += "align-items: flex-end; ";
+  }
+
+  return style;
+}
+
+function handleAbsolutePos(node) {
+  let style = "position: absolute; ";
+  if (node.constraints.horizontal === "MAX") {
+    style += `right:${node.parent.width - node.x - node.width}px; `;
+  } else {
+    style += `left:${node.x}px; `;
+  }
+
+  if (node.constraints.vertical === "MAX") {
+    style += `bottom:${node.parent.height - node.y - node.height}px; `;
+  } else {
+    style += `top:${node.y}px; `;
   }
 
   return style;
