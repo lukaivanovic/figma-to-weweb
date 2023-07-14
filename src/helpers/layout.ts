@@ -61,15 +61,19 @@ function autoLayoutNode(node) {
   }
 
   if (node.primaryAxisSizingMode === "FIXED") {
-    node.layoutMode === "HORIZONTAL"
-      ? (style += `width: ${node.width}px; `)
-      : (style += `height: ${node.height}px; `);
+    if (node.layoutMode === "HORIZONTAL") {
+      style += `width: ${node.width}px; `;
+    } else {
+      style += `height: ${node.height}px; `;
+    }
   }
 
   if (node.counterAxisSizingMode === "FIXED") {
-    node.layoutMode === "HORIZONTAL"
-      ? (style += `height: ${node.height}px; `)
-      : (style += `width: ${node.width}px; `);
+    if (node.layoutMode === "HORIZONTAL") {
+      style += `height: ${node.height}px; `;
+    } else {
+      style += `width: ${node.width}px; `;
+    }
 
     style += padding(node);
   }
