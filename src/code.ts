@@ -5,6 +5,8 @@ import { key } from "./beta";
 
 let isVerified;
 let nodeCount = 0;
+let autoLayoutFrames = 0;
+let numOfFrames = 0;
 
 figma.showUI(__html__, { themeColors: true, height: 220, width: 264 });
 
@@ -33,7 +35,11 @@ async function main() {
     figma.notify("Please select at least one layer.");
   } else {
     nodeCount = 0;
-    if (await countNodes(selection[0])) {
+    autoLayoutFrames = 0;
+    numOfFrames = 0;
+
+    const result = await countNodes(selection[0]);
+    if (result.type) {
       parse(selection);
     } else {
       figma.notify("Too many layers.");
@@ -45,12 +51,39 @@ async function countNodes(selection) {
   if ("children" in selection) {
     for (const child of selection.children) {
       nodeCount++;
+      if (child.type === "FRAME") {
+        numOfFrames++;
+        if (child.layoutMode !== "NONE") {
+          autoLayoutFrames++;
+        }
+      }
       if (child.getRelaunchData().tag != "Ignore") {
         await countNodes(child);
       }
     }
   }
-  return nodeCount > 200 ? false : true;
+
+  const autoLayoutPercentage = autoLayoutFrames / numOfFrames;
+  if (nodeCount > 200) {
+    return {
+      type: false,
+      message: "Too many nodes selected.",
+    };
+  } else {
+    if (autoLayoutPercentage < 0.4) {
+      return {
+        type: false,
+        message: "Not enough frames are using auto layout.",
+      };
+    } else {
+      return {
+        type: true,
+        message: "",
+      };
+    }
+  }
+
+  // return nodeCount > 200 ? false : true;
 }
 
 figma.ui.on("message", ({ type, payload }) => {
@@ -98,7 +131,11 @@ async function selectionChange() {
     }
 
     nodeCount = 0;
-    if (await countNodes(selection[0])) {
+    autoLayoutFrames = 0;
+    numOfFrames = 0;
+    const result = await countNodes(selection[0]);
+
+    if (result.type) {
       figma.ui.postMessage({
         type: "ok",
         payload: `Selected: ${selection[0].name}`,
@@ -106,7 +143,7 @@ async function selectionChange() {
     } else {
       figma.ui.postMessage({
         type: "error",
-        payload: { code: "TOO_MANY", message: "Too many nodes selected." },
+        payload: { code: "TOO_MANY", message: result.message },
       });
     }
   }
