@@ -84,7 +84,7 @@ function generateElement(node) {
 
             const style = frame(node)
             element._state.style.default = style.style
-            element.content.default.placeholder = { en: "Input" }
+            element.content.default.placeholder = { en: 'Input' }
 
             for (const child of node.children) {
               if (child.type === 'TEXT') {
@@ -249,12 +249,11 @@ function resolveIcon(node) {
   }
 }
 
-
 async function getAndLogCSSAsync(node) {
   try {
-    const cssStyle = await node.getCSSAsync();
-    console.log(cssStyle);
+    const cssStyle = await node.getCSSAsync()
+    console.log(cssStyle)
   } catch (error) {
-    console.error("Error:");
+    console.error('Error:')
   }
 }
