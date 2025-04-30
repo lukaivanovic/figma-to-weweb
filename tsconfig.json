@@ -1,0 +1,49 @@
+/* {
+  "compilerOptions": {
+    "strict": false,
+    "target": "es2019",
+    "module": "es2020",
+    "lib": ["es2020", "dom"],
+    "moduleResolution": "node",
+    "skipLibCheck": true,
+    "resolveJsonModule": true,
+    "allowSyntheticDefaultImports": true,
+    "typeRoots": [
+      "./node_modules/@types",
+      "./node_modules/@figma"
+    ]
+  }
+}
+*/
+
+{
+  "compilerOptions": {
+    "target": "es2019",
+    "module": "es2020",
+    "lib": ["es2021", "dom"],
+    "strict": true,
+    "typeRoots": [
+      "./node_modules/@types",
+      "./node_modules/@figma"
+    ],
+    "outDir": "./dist",
+    "allowJs": true,
+    "moduleResolution": "node",
+    "noImplicitAny": false
+  },
+  "include": ["src/**/*.ts", "style.ts", "src/util/io.js"]
+}
+
+/* {
+  "compilerOptions": {
+    "target": "es6",
+    "lib": ["es6"],
+    "strict": true,
+    "typeRoots": [
+      "./node_modules/@types",
+      "./node_modules/@figma"
+    ],
+    "noImplicitAny": false
+  }
+}
+*/

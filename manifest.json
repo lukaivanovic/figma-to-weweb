@@ -1,0 +1,23 @@
+{
+  "name": "figma-to-weweb",
+  "id": "1227257007623431685",
+  "api": "1.0.0",
+  "main": "dist/code.js",
+  "capabilities": [],
+  "enableProposedApi": false,
+  "editorType": [
+    "figma"
+  ],
+  "ui": "ui.html",
+  "relaunchButtons": [
+    {
+      "command": "tag",
+      "name": "WeWeb"
+    }
+  ],
+  "networkAccess": {
+    "allowedDomains": [
+      "https://cdn.weweb.io"
+    ]
+  }
+}
